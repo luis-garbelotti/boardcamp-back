@@ -1,5 +1,4 @@
 import joi from 'joi';
-import dayjs from 'dayjs';
 
 const customerSchema = joi.object({
     name: joi.string().required(),

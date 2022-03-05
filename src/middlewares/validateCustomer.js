@@ -11,7 +11,7 @@ export default async function validateCustomer(req, res, next) {
 
     const cpf = await connection.query(`
         SELECT * FROM customers
-            WHERE customer.cpf = $1
+            WHERE customers.cpf = $1
     `, [req.body.cpf]
     );
 
