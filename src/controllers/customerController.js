@@ -32,14 +32,24 @@ export async function getCustomers(req, res) {
 
 export async function insertCustomer(req, res) {
 
-    const customer = req.body;
+    const { name, phone, birthday, cpf } = req.body;
     
     try {
+
+        const cpfCostumer = await connection.query(`
+            SELECT * FROM customers
+                WHERE customers.cpf = $1
+        `, [ cpf ]
+        );
+
+        if (cpfCostumer.rowCount !== 0) {
+            return res.sendStatus(409);
+        }
         
         await connection.query(`
             INSERT INTO customers (name, phone, cpf, birthday)
                 VALUES ($1, $2, $3, $4)
-        `, [ customer.name, customer.phone, customer.cpf, customer.birthday ]);
+        `, [ name, phone, cpf, birthday ]);
 
         res.sendStatus(201);
 
@@ -68,7 +78,7 @@ export async function getCustomerById(req, res) {
             
         }
         
-        res.send(customer.rows);
+        res.send(formatDate(customer.rows));
 
     } catch (error) {
         
@@ -76,4 +86,36 @@ export async function getCustomerById(req, res) {
 
     }
     
+}
+
+export async function updateCustomer(req, res) {
+
+    const { name, phone, cpf, birthday } = req.body;
+    const { id } = req.params;
+
+    try {
+
+        const customer = await connection.query(`
+            SELECT * FROM customers
+                WHERE customers.id = $1
+        `, [id]);
+
+        if(customer.rowCount === 0) {
+            return res.sendStatus(401);
+        }
+
+        await connection.query(`
+            UPDATE customers 
+                SET 
+                    name = $1, phone = $2, cpf = $3, birthday = $4
+                WHERE customers.id = $5
+        `, [ name, phone, cpf, birthday, id ])
+
+        res.sendStatus(200);
+
+    } catch (error) {
+        
+        res.sendStatus(500);
+    }
+
 }
