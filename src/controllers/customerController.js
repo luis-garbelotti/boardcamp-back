@@ -50,3 +50,30 @@ export async function insertCustomer(req, res) {
     }
 
 }
+
+export async function getCustomerById(req, res) {
+
+    const { id } = req.params;
+
+    try {
+
+        const customer = await connection.query(`
+            SELECT * FROM customers
+                WHERE customers.id = $1
+        `, [id]);
+
+        if(customer.rowCount === 0) {
+
+            return res.sendStatus(404);
+            
+        }
+        
+        res.send(customer.rows);
+
+    } catch (error) {
+        
+        res.sendStatus(500);
+
+    }
+    
+}
