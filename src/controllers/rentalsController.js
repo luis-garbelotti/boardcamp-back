@@ -1,6 +1,7 @@
 import connection from '../db.js';
 import daysjs from 'dayjs';
 import SqlString from 'sqlstring';
+import dayjs from 'dayjs';
 
 export async function getRentals(req, res) {
 
@@ -108,6 +109,58 @@ export async function insertRental(req, res) {
         
         res.sendStatus(500);
         
+    }
+
+}
+
+export async function returnRental(req, res) {
+
+    const {id} = req.params;
+    const returnedDay = dayjs().format('YYYY-MM-DD');
+
+    try {
+        
+        const rental = await connection.query(`
+            SELECT * FROM rentals
+                WHERE id = $1
+        `, [id]);
+
+        if(rental.rowCount === 0) {
+            return res.sendStatus(404);
+        }
+
+        if(rental.rows[0].returnDate !== null) {
+            return res.sendStatus(400);
+        }  
+
+        const game = await connection.query(`
+            SELECT * FROM games
+            WHERE games.id = $1
+        `, [rental.rows[0].gameId])
+
+        const delayDays = dayjs(dayjs(returnedDay) - dayjs(rental.rows[0].rentDate) - (rental.rows[0].daysRented * 86400000)) / 86400000
+        
+        let fee = null;
+        if(delayDays > 0) {
+            
+            fee = delayDays * game.rows[0].pricePerDay;
+            
+        }
+
+        await connection.query(`
+                UPDATE rentals 
+                SET 
+                    "returnDate" = $1,
+                    "delayFee" = $2
+                WHERE id = $3
+            `, [ returnedDay, fee, id ]);
+
+        res.sendStatus(200);
+
+    } catch (error) {
+
+        res.sendStatus(500);
+
     }
 
 }
