@@ -45,9 +45,9 @@ export async function getRentals(req, res) {
                id,
                customerId,
                gameId,
-               rentDate,
+               rentDate: dayjs(rentDate).format('YYYY-MM-DD'),
                daysRented,
-               returnDate,
+               returnDate: returnDate !== null ? dayjs(returnDate).format('YYYY-MM-DD') : null,
                originalPrice,
                delayFee,
                costumer: {
