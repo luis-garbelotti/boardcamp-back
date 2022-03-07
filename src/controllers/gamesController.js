@@ -41,7 +41,7 @@ export async function insertGame(req, res) {
     const gameFormated = {
         ...newGame, 
         stockTotal: parseInt(newGame.stockTotal),
-        pricePerDay: parseInt(newGame.pricePerDay)
+        pricePerDay: parseInt(newGame.pricePerDay) * 100
     }
 
     try {
